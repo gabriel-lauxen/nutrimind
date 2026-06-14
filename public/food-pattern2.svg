@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <g fill="none" stroke="#4a7c59" stroke-opacity="0.12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Linha 1 -->
+    <g transform="translate(40,38) rotate(-26)"><path d="M0,-10 C -10,-20 -22,-7 -17,7 C -13,17 -3,20 0,13 C 3,20 13,17 17,7 C 22,-7 10,-20 0,-10 Z"/><path d="M0,-12 L 2,-20"/><path d="M2,-18 q 9,-6 13,1 q -7,4 -13,-1"/></g>
+    <g transform="translate(112,44) rotate(28)"><path d="M-8,-12 L 8,-12 L 0,20 Z"/><path d="M-5,-12 L -11,-23"/><path d="M0,-12 L 0,-25"/><path d="M5,-12 L 11,-23"/></g>
+    <g transform="translate(182,36) rotate(-14)"><path d="M0,-6 L 0,-12"/><circle cx="0" cy="0" r="4.5"/><circle cx="-8" cy="3" r="4.5"/><circle cx="8" cy="3" r="4.5"/><circle cx="-4" cy="10" r="4.5"/><circle cx="4" cy="10" r="4.5"/><circle cx="0" cy="17" r="4.5"/></g>
+    <g transform="translate(252,46) rotate(16)"><path d="M0,22 L 0,2"/><circle cx="-9" cy="-5" r="7"/><circle cx="0" cy="-12" r="8"/><circle cx="10" cy="-5" r="7"/><circle cx="-3" cy="-15" r="5"/><circle cx="5" cy="-15" r="5"/></g>
+
+    <!-- Linha 2 -->
+    <g transform="translate(38,112) rotate(20)"><ellipse cx="0" cy="0" rx="20" ry="11"/><path d="M16,0 L 28,-8 L 28,8 Z"/><circle cx="-11" cy="-3" r="1.4"/></g>
+    <g transform="translate(106,100) rotate(-34)"><path d="M0,-18 C 11,-11 11,11 0,18 C -11,11 -11,-11 0,-18 Z"/><path d="M0,-16 L 0,16"/><path d="M0,-6 L 7,-10"/><path d="M0,3 L -7,-1"/></g>
+    <g transform="translate(174,116) rotate(18)"><path d="M0,-20 C 13,-20 16,-4 13,9 C 9,20 -9,20 -13,9 C -16,-4 -13,-20 0,-20 Z"/><circle cx="0" cy="5" r="6"/></g>
+    <g transform="translate(246,106) rotate(-22)"><path d="M-17,-6 C -9,15 11,17 19,4 C 13,11 0,9 -8,-3 C -11,-8 -15,-8 -17,-6 Z"/></g>
+
+    <!-- Linha 3 -->
+    <g transform="translate(44,182) rotate(24)"><circle cx="0" cy="2" r="14"/><path d="M0,-12 L 0,-20"/><path d="M0,-14 L -7,-20"/><path d="M0,-14 L 7,-20"/></g>
+    <g transform="translate(112,174) rotate(-12)"><path d="M-11,-15 L 11,-15 L 8,17 L -8,17 Z"/><path d="M-8,-2 q 4,-5 8,-1 q 5,4 8,-1"/></g>
+    <g transform="translate(182,186) rotate(30)"><path d="M-15,-2 C -21,-12 -7,-16 -2,-11 C 6,-17 17,-9 15,0 C 21,8 11,15 2,11 C -7,17 -19,7 -15,-2 Z"/><circle cx="0" cy="0" r="5.5"/></g>
+    <g transform="translate(250,176) rotate(-30)"><path d="M0,-10 C -10,-20 -22,-7 -17,7 C -13,17 -3,20 0,13 C 3,20 13,17 17,7 C 22,-7 10,-20 0,-10 Z"/><path d="M0,-12 L 2,-20"/></g>
+
+    <!-- Linha 4 -->
+    <g transform="translate(40,250) rotate(14)"><path d="M0,22 L 0,2"/><circle cx="-9" cy="-5" r="7"/><circle cx="0" cy="-12" r="8"/><circle cx="10" cy="-5" r="7"/><circle cx="-3" cy="-15" r="5"/><circle cx="5" cy="-15" r="5"/></g>
+    <g transform="translate(110,256) rotate(38)"><path d="M0,-16 C 10,-9 10,9 0,16 C -10,9 -10,-9 0,-16 Z"/><path d="M0,-14 L 0,14"/></g>
+    <g transform="translate(180,248) rotate(-18)"><path d="M-8,-12 L 8,-12 L 0,20 Z"/><path d="M-5,-12 L -11,-23"/><path d="M0,-12 L 0,-25"/><path d="M5,-12 L 11,-23"/></g>
+    <g transform="translate(250,256) rotate(26)"><ellipse cx="0" cy="0" rx="20" ry="11"/><path d="M16,0 L 28,-8 L 28,8 Z"/><circle cx="-11" cy="-3" r="1.4"/></g>
+
+  </g>
+</svg>
