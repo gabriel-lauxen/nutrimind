@@ -13,6 +13,8 @@ import {
   setFont,
   getNumFont,
   setNumFont,
+  getMode,
+  setMode,
 } from "../lib/theme.js";
 import Questionnaire from "./Questionnaire.jsx";
 
@@ -30,6 +32,12 @@ export default function Settings() {
   const [palette, setPaletteSel] = useState(getPalette());
   const [font, setFontSel] = useState(getFont());
   const [numFont, setNumFontSel] = useState(getNumFont());
+  const [mode, setModeSel] = useState(getMode());
+
+  function escolherModo(m) {
+    setMode(m);
+    setModeSel(m);
+  }
 
   function escolherPaleta(id) {
     setPalette(id);
@@ -80,7 +88,16 @@ export default function Settings() {
               autoComplete="off"
             />
             <p className="muted" style={{ marginTop: 6 }}>
-              Crie uma chave gratuita em console.groq.com → API Keys.
+              Crie uma chave gratuita em{" "}
+              <a
+                className="link-groq"
+                href="https://console.groq.com/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                console.groq.com → API Keys
+              </a>
+              .
             </p>
           </div>
 
@@ -101,9 +118,36 @@ export default function Settings() {
       <div className="card config-card">
         <h2>Aparência</h2>
         <p className="subtitle">
-          Escolha a paleta de cores e a tipografia do app. As mudanças são
-          aplicadas na hora.
+          Escolha o tema, a paleta de cores e a tipografia do app. As mudanças
+          são aplicadas na hora.
         </p>
+
+        <div className="field">
+          <label>Tema</label>
+          <div className="mode-row">
+            <button
+              type="button"
+              className={`mode-opt${mode === "light" ? " selected" : ""}`}
+              onClick={() => escolherModo("light")}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+              </svg>
+              Claro
+            </button>
+            <button
+              type="button"
+              className={`mode-opt${mode === "dark" ? " selected" : ""}`}
+              onClick={() => escolherModo("dark")}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+              </svg>
+              Escuro
+            </button>
+          </div>
+        </div>
 
         <div className="field">
           <label>Paleta de cores</label>

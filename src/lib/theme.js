@@ -4,6 +4,7 @@
 const PAL_KEY = "nm_palette";
 const FONT_KEY = "nm_font";
 const NUMFONT_KEY = "nm_numfont";
+const MODE_KEY = "nm_mode";
 
 export const PALETTES = [
   {
@@ -27,14 +28,14 @@ export const PALETTES = [
   {
     id: "oceano",
     nome: "Oceano",
-    dot: "#2b86c4",
+    dot: "#2982ad",
     vars: {
-      "--accent": "#2b86c4",
-      "--accent-dark": "#1c6196",
-      "--accent-rgb": "43, 134, 196",
-      "--accent-soft": "#dcebf7",
+      "--accent": "#2982ad",
+      "--accent-dark": "#1a6088",
+      "--accent-rgb": "41, 130, 173",
+      "--accent-soft": "#dbeaf4",
       "--header-grad":
-        "linear-gradient(125deg, rgba(18,84,140,0.9), rgba(54,154,214,0.62))",
+        "linear-gradient(125deg, rgba(16,82,118,0.9), rgba(52,148,190,0.62))",
       "--bg-base": "#e9f1f8",
       "--bg-g1": "rgba(60, 156, 220, 0.52)",
       "--bg-g2": "rgba(30, 104, 166, 0.44)",
@@ -44,14 +45,14 @@ export const PALETTES = [
   {
     id: "ameixa",
     nome: "Ameixa",
-    dot: "#9b4fb0",
+    dot: "#8a55a6",
     vars: {
-      "--accent": "#9b4fb0",
-      "--accent-dark": "#743a88",
-      "--accent-rgb": "155, 79, 176",
-      "--accent-soft": "#f0e3f5",
+      "--accent": "#8a55a6",
+      "--accent-dark": "#69407f",
+      "--accent-rgb": "138, 85, 166",
+      "--accent-soft": "#ece2f3",
       "--header-grad":
-        "linear-gradient(125deg, rgba(104,48,128,0.9), rgba(172,92,196,0.62))",
+        "linear-gradient(125deg, rgba(96,52,122,0.9), rgba(158,96,186,0.62))",
       "--bg-base": "#f1e8f6",
       "--bg-g1": "rgba(186, 110, 212, 0.5)",
       "--bg-g2": "rgba(138, 72, 166, 0.42)",
@@ -61,14 +62,14 @@ export const PALETTES = [
   {
     id: "coral",
     nome: "Coral",
-    dot: "#e0644c",
+    dot: "#db6048",
     vars: {
-      "--accent": "#e0644c",
-      "--accent-dark": "#b3452f",
-      "--accent-rgb": "224, 100, 76",
-      "--accent-soft": "#f9e1da",
+      "--accent": "#db6048",
+      "--accent-dark": "#b0442f",
+      "--accent-rgb": "219, 96, 72",
+      "--accent-soft": "#f8e1d9",
       "--header-grad":
-        "linear-gradient(125deg, rgba(174,54,38,0.9), rgba(234,114,88,0.62))",
+        "linear-gradient(125deg, rgba(168,52,36,0.9), rgba(226,108,82,0.62))",
       "--bg-base": "#f9ece5",
       "--bg-g1": "rgba(242, 138, 104, 0.52)",
       "--bg-g2": "rgba(212, 88, 62, 0.44)",
@@ -78,14 +79,14 @@ export const PALETTES = [
   {
     id: "ambar",
     nome: "Âmbar",
-    dot: "#d09b2c",
+    dot: "#c8922f",
     vars: {
-      "--accent": "#d09b2c",
-      "--accent-dark": "#a4781d",
-      "--accent-rgb": "208, 155, 44",
-      "--accent-soft": "#f6ecd2",
+      "--accent": "#c8922f",
+      "--accent-dark": "#9d711f",
+      "--accent-rgb": "200, 146, 47",
+      "--accent-soft": "#f5ead0",
       "--header-grad":
-        "linear-gradient(125deg, rgba(156,110,20,0.9), rgba(216,168,58,0.62))",
+        "linear-gradient(125deg, rgba(148,104,20,0.9), rgba(206,158,52,0.62))",
       "--bg-base": "#f7f0db",
       "--bg-g1": "rgba(228, 188, 78, 0.54)",
       "--bg-g2": "rgba(196, 148, 46, 0.46)",
@@ -206,9 +207,19 @@ export function setNumFont(id) {
   localStorage.setItem(NUMFONT_KEY, f.id);
 }
 
+export function getMode() {
+  return localStorage.getItem(MODE_KEY) === "dark" ? "dark" : "light";
+}
+export function setMode(m) {
+  const mode = m === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-mode", mode);
+  localStorage.setItem(MODE_KEY, mode);
+}
+
 // chamado no boot da app, antes de renderizar
 export function applySavedTheme() {
   setPalette(getPalette());
   setFont(getFont());
   setNumFont(getNumFont());
+  setMode(getMode());
 }

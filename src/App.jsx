@@ -318,6 +318,13 @@ export default function App() {
   return (
     <>
       <div className="bg-anim" aria-hidden="true" />
+      <div className="bg-orbs" aria-hidden="true">
+        <span className="orb orb-1" />
+        <span className="orb orb-2" />
+        <span className="orb orb-3" />
+        <span className="orb orb-4" />
+        <span className="orb orb-ring" />
+      </div>
       <div className="bg-overlay" aria-hidden="true" />
       <Routes>
         <Route path="/login" element={<Login />} />

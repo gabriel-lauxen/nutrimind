@@ -92,6 +92,17 @@ a {
 a:hover {
   text-decoration: underline;
 }
+/* link destacado (ex.: console.groq.com nas Configurações) */
+.link-groq {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1.5px;
+}
+.link-groq:hover {
+  color: var(--accent-dark);
+}
 
 .app-shell {
   min-height: 100vh;
@@ -259,10 +270,91 @@ a:hover {
 .bg-anim {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: -3;
   pointer-events: none;
   overflow: hidden;
   background: var(--bg-base);
+}
+/* "Elementos" flutuantes — dão volume e cor pro efeito glass dos cards.
+   Ficam acima do mesh e abaixo do wash; o blur dos cards os refrata. */
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(34px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.orb-1 {
+  width: 360px;
+  height: 360px;
+  background: var(--bg-g1);
+  top: -80px;
+  left: -50px;
+  animation: orb-a 23s ease-in-out infinite alternate;
+}
+.orb-2 {
+  width: 300px;
+  height: 300px;
+  background: var(--bg-g2);
+  top: 28%;
+  right: -70px;
+  animation: orb-b 28s ease-in-out infinite alternate;
+}
+.orb-3 {
+  width: 260px;
+  height: 260px;
+  background: var(--bg-g3);
+  bottom: -70px;
+  left: 22%;
+  animation: orb-c 26s ease-in-out infinite alternate;
+}
+.orb-4 {
+  width: 220px;
+  height: 220px;
+  background: rgba(var(--accent-rgb), 0.45);
+  opacity: 0.4;
+  bottom: 14%;
+  right: 24%;
+  animation: orb-a 31s ease-in-out infinite alternate;
+}
+/* um anel fino (não preenchido) p/ variar a textura sob o vidro */
+.orb-ring {
+  width: 300px;
+  height: 300px;
+  top: 12%;
+  left: 40%;
+  background: transparent;
+  border: 26px solid rgba(var(--accent-rgb), 0.18);
+  filter: blur(22px);
+  opacity: 0.6;
+  animation: orb-c 34s ease-in-out infinite alternate;
+}
+@keyframes orb-a {
+  to {
+    transform: translate(70px, 50px) scale(1.18);
+  }
+}
+@keyframes orb-b {
+  to {
+    transform: translate(-60px, 70px) scale(1.12);
+  }
+}
+@keyframes orb-c {
+  to {
+    transform: translate(50px, -60px) scale(1.22);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+  }
 }
 /* duas camadas de manchas borradas que fluem em tempos diferentes → orgânico.
    Movimento mais amplo e rápido p/ ficar bem perceptível. */
@@ -316,7 +408,7 @@ a:hover {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: rgba(248, 250, 246, 0.34);
+  background: rgba(248, 250, 246, 0.22);
 }
 
 /* ---------- Header verde liquid glass ---------- */
@@ -516,6 +608,26 @@ a:hover {
   margin-bottom: 18px;
   font-size: 0.92rem;
   font-weight: 500;
+}
+
+/* Painéis da coluna esquerda (ex.: lista de compras) seguem o mesmo estilo
+   do título do plano: mesmo padding, tamanho de fonte e sombra */
+.col-left .card {
+  padding: 14px 16px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.col-left .card h2 {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #284a35;
+  line-height: 1.1;
+  margin-bottom: 6px;
+  padding: 4px 2px 0;
+}
+.col-left .card .subtitle {
+  padding: 0 2px;
+  font-size: 0.86rem;
+  margin-bottom: 14px;
 }
 
 /* ---------- Forms ---------- */
@@ -1949,4 +2061,335 @@ input[type="checkbox"]:focus-visible {
   .auth-card h1 {
     font-size: 1.7rem;
   }
+}
+
+/* ---------- Edição manual da lista de compras ---------- */
+.btn-edit-toggle {
+  margin-top: 12px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent-dark);
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    filter 0.18s;
+}
+.btn-edit-toggle:hover {
+  background: rgba(var(--accent-rgb), 0.16);
+}
+.btn-edit-toggle.ativo {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+/* "Concluir" flutuante — aparece SÓ depois de rolar além do botão do card,
+   renderizado fora dos cards (sem backdrop-filter), por isso fixa de verdade.
+   Mobile apenas. */
+.concluir-fixo {
+  position: fixed;
+  top: calc(var(--header-h) + 8px);
+  left: 0;
+  right: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+  animation: concluir-in 0.18s ease;
+}
+.concluir-fixo .btn-edit-toggle {
+  pointer-events: auto;
+  width: auto;
+  min-width: 240px;
+  margin: 0;
+  box-shadow: 0 10px 24px rgba(20, 35, 25, 0.3);
+}
+@keyframes concluir-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+@media (min-width: 1024px) {
+  .concluir-fixo {
+    display: none;
+  }
+}
+.cat-edit-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.cat-name-input {
+  flex: 1;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.edit-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.edit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.edit-item-name {
+  flex: 1;
+}
+.edit-item-qtd {
+  width: 88px;
+  flex: 0 0 auto;
+}
+.icon-x {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(210, 90, 70, 0.35);
+  background: rgba(210, 90, 70, 0.1);
+  color: #c0533a;
+  cursor: pointer;
+}
+.icon-x:hover {
+  background: rgba(210, 90, 70, 0.18);
+}
+.icon-x svg {
+  width: 17px;
+  height: 17px;
+}
+.add-cat-card label {
+  margin-bottom: 8px;
+}
+html[data-mode="dark"] .btn-edit-toggle {
+  color: #cdebda;
+  background: rgba(var(--accent-rgb), 0.18);
+}
+html[data-mode="dark"] .icon-x {
+  background: rgba(224, 110, 90, 0.16);
+  border-color: rgba(224, 110, 90, 0.3);
+  color: #f0a08c;
+}
+
+/* =====================  MODO ESCURO  ===================== */
+html[data-mode="dark"] {
+  /* faz os controles nativos (checkbox, radio, scrollbar) renderizarem escuros */
+  color-scheme: dark;
+  --surface: #1a201c;
+  --surface-2: #161c18;
+  --ink: #e9efe9;
+  --muted: #98a49b;
+  --border: rgba(255, 255, 255, 0.1);
+  /* !important p/ vencer o valor inline (claro) que o seletor de paleta grava.
+     Verde/accent um pouco mais claro no escuro p/ melhorar o contraste do texto */
+  --accent: color-mix(in srgb, rgb(var(--accent-rgb)), white 16%) !important;
+  --accent-dark: color-mix(in srgb, rgb(var(--accent-rgb)), white 42%) !important;
+  --accent-soft: rgba(var(--accent-rgb), 0.24) !important;
+  --shadow-sm: 0 2px 8px -1px rgba(0, 0, 0, 0.45);
+  --shadow: 0 16px 30px -12px rgba(0, 0, 0, 0.55);
+}
+/* opção de radio selecionada no escuro: fundo translúcido + título legível */
+html[data-mode="dark"] .option.selected .opt-title {
+  color: #eafff4;
+}
+/* fundo escuro (cobre o body); orbs e mesh viram brilhos suaves */
+html[data-mode="dark"] body {
+  background-color: #0e1311;
+}
+html[data-mode="dark"] .bg-anim {
+  background: #0e1311;
+}
+html[data-mode="dark"] .bg-overlay {
+  background: rgba(8, 11, 9, 0.5);
+}
+html[data-mode="dark"] .orb {
+  opacity: 0.38;
+}
+/* superfícies de vidro → vidro escuro translúcido */
+html[data-mode="dark"] .card,
+html[data-mode="dark"] .plan-summary,
+html[data-mode="dark"] .config-card {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+html[data-mode="dark"] .macro-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+/* card de refeição + opções + botão "gerar personalizada" no escuro */
+html[data-mode="dark"] .meal {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.09);
+}
+html[data-mode="dark"] .opt-prato {
+  background: rgba(255, 255, 255, 0.06);
+}
+html[data-mode="dark"] .pers-box {
+  background: rgba(255, 255, 255, 0.05);
+}
+html[data-mode="dark"] .btn-add {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+html[data-mode="dark"] .btn-add:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+/* números dos macros mais claros p/ contraste no escuro */
+html[data-mode="dark"] .m-kcal {
+  --mc-num: #5fc28a;
+}
+html[data-mode="dark"] .m-prot {
+  --mc-num: #6fce9a;
+}
+html[data-mode="dark"] .m-carb {
+  --mc-num: #e6b24e;
+}
+html[data-mode="dark"] .m-fat {
+  --mc-num: #84c2a0;
+}
+/* inputs */
+html[data-mode="dark"] input,
+html[data-mode="dark"] select,
+html[data-mode="dark"] textarea {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+html[data-mode="dark"] input::placeholder,
+html[data-mode="dark"] textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+html[data-mode="dark"] select option {
+  color: #1a201c;
+}
+/* slider de água */
+html[data-mode="dark"] .agua-bar {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+html[data-mode="dark"] .agua-label {
+  color: #cdebda;
+}
+/* chat: barra de input + balão do assistente (o input fica transparente) */
+html[data-mode="dark"] .chat-input-bar {
+  background: rgba(26, 32, 28, 0.82);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+html[data-mode="dark"] .chat-input-bar input {
+  background: transparent;
+}
+html[data-mode="dark"] .chat-bubble.assistant {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+/* títulos verdes hardcoded → claros */
+html[data-mode="dark"] .plan-title-main,
+html[data-mode="dark"] .col-left .card h2 {
+  color: #d8e6dd;
+}
+/* descrição/pane */
+html[data-mode="dark"] .plan-note {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+/* chips e filtros */
+html[data-mode="dark"] .chip {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+html[data-mode="dark"] .chip.selected {
+  background: rgba(var(--accent-rgb), 0.55);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #fff;
+}
+html[data-mode="dark"] .filter-bar {
+  background: rgba(28, 34, 30, 0.72);
+}
+html[data-mode="dark"] .app-shell .col-right > .filter-bar {
+  background: rgba(26, 32, 28, 0.82);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+/* botão "ver lista de compras" (era verde claro) */
+html[data-mode="dark"] .btn-compras {
+  background: rgba(16, 22, 18, 0.55);
+  color: color-mix(in srgb, rgb(var(--accent-rgb)), white 30%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+html[data-mode="dark"] .btn-compras:hover {
+  background: rgba(26, 34, 28, 0.65);
+}
+/* seletores de fonte/tipografia */
+html[data-mode="dark"] .font-opt,
+html[data-mode="dark"] .numfont-opt {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+html[data-mode="dark"] .font-opt.selected,
+html[data-mode="dark"] .numfont-opt.selected {
+  background: rgba(var(--accent-rgb), 0.2);
+  border-color: var(--accent);
+}
+html[data-mode="dark"] .font-opt-aa,
+html[data-mode="dark"] .numfont-num {
+  color: #c9e6d4;
+}
+/* skeleton */
+html[data-mode="dark"] .skel {
+  background: rgba(255, 255, 255, 0.06);
+}
+/* toggle claro/escuro */
+.mode-row {
+  display: flex;
+  gap: 8px;
+}
+.mode-opt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--r-input);
+  border: 1.5px solid var(--border);
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+html[data-mode="dark"] .mode-opt {
+  background: rgba(255, 255, 255, 0.05);
+}
+.mode-opt.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+html[data-mode="dark"] .mode-opt.selected {
+  color: #d8e6dd;
+}
+.mode-opt svg {
+  width: 18px;
+  height: 18px;
 }

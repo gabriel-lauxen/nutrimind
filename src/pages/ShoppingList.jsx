@@ -161,6 +161,35 @@ export default function ShoppingList() {
   const [filtro, setFiltro] = useState("Todos");
   const [carregando, setCarregando] = useState(true);
   const [gerando, setGerando] = useState(false);
+  const [editando, setEditando] = useState(false);
+  const [novaCat, setNovaCat] = useState("");
+  const [concluirFixo, setConcluirFixo] = useState(false);
+  const editBtnRef = useRef(null);
+
+  // Ao editar: mostra um "Concluir" flutuante quando o botão do card rola
+  // pra cima e passa atrás do header (mobile). Some quando ele reaparece.
+  useEffect(() => {
+    if (!editando) {
+      setConcluirFixo(false);
+      return;
+    }
+    const onScroll = () => {
+      const el = editBtnRef.current;
+      if (!el) return;
+      const hh =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue("--header-h"),
+        ) || 72;
+      setConcluirFixo(el.getBoundingClientRect().top < hh + 8);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [editando]);
 
   const [chat, setChat] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -245,6 +274,43 @@ export default function ShoppingList() {
       ),
     };
     persistir(nova);
+  }
+
+  // ---- edição manual da lista (renomear, add/remover itens e categorias) ----
+  // edições de texto atualizam só o estado; salvam no banco ao sair do campo (blur)
+  const mapCat = (ci, fn) => ({
+    ...lista,
+    categorias: lista.categorias.map((c, x) => (x !== ci ? c : fn(c))),
+  });
+  function editarItem(ci, ii, campo, valor) {
+    setLista(mapCat(ci, (c) => ({
+      ...c,
+      itens: c.itens.map((it, y) => (y !== ii ? it : { ...it, [campo]: valor })),
+    })));
+  }
+  function removerItem(ci, ii) {
+    persistir(mapCat(ci, (c) => ({ ...c, itens: c.itens.filter((_, y) => y !== ii) })));
+  }
+  function adicionarItem(ci) {
+    persistir(mapCat(ci, (c) => ({
+      ...c,
+      itens: [...c.itens, { item: "Novo item", quantidade: "", marcado: false }],
+    })));
+  }
+  function renomearCategoria(ci, nome) {
+    setLista(mapCat(ci, (c) => ({ ...c, nome })));
+  }
+  function removerCategoria(ci) {
+    persistir({ ...lista, categorias: lista.categorias.filter((_, x) => x !== ci) });
+  }
+  function adicionarCategoria() {
+    const nome = novaCat.trim() || "Nova categoria";
+    setNovaCat("");
+    persistir({ ...lista, categorias: [...lista.categorias, { nome, itens: [] }] });
+  }
+  function sairEdicao() {
+    setEditando(false);
+    persistir(lista); // garante salvar as edições de texto pendentes
   }
 
   async function enviarComando(texto) {
@@ -339,6 +405,16 @@ export default function ShoppingList() {
             Gerar lista
           </button>
         </div>
+        {lista && (
+          <button
+            type="button"
+            ref={editBtnRef}
+            className={`btn-edit-toggle${editando ? " ativo" : ""}`}
+            onClick={() => (editando ? sairEdicao() : setEditando(true))}
+          >
+            {editando ? "✓ Concluir edição" : "✎ Editar lista manualmente"}
+          </button>
+        )}
       </div>
 
       <div className="card assist-card">
@@ -370,7 +446,7 @@ export default function ShoppingList() {
       </div>
 
       <div className="col-right">
-      {lista ? (
+      {lista && !editando ? (
         <div className="filter-bar filter-scroll" ref={filterRef}>
           {filtros.map((f) => (
             <span key={f} className={`chip ${filtro === f ? "selected" : ""}`} onClick={() => aplicarFiltro(f)}>
@@ -395,7 +471,7 @@ export default function ShoppingList() {
           </div>
         ))}
 
-      {!carregando && !gerando && lista && lista.categorias
+      {!carregando && !gerando && lista && !editando && lista.categorias
         .map((cat, ci) => ({ cat, ci }))
         .filter(({ cat }) => filtro === "Todos" || cat.nome === filtro)
         .map(({ cat, ci }) => (
@@ -417,12 +493,80 @@ export default function ShoppingList() {
           </div>
         ))}
 
+      {/* ---- MODO EDIÇÃO ---- */}
+      {!carregando && !gerando && lista && editando && (
+        <>
+          {lista.categorias.map((cat, ci) => (
+            <div className="card cat-edit" key={ci}>
+              <div className="cat-edit-head">
+                <input
+                  className="cat-name-input"
+                  value={cat.nome}
+                  onChange={(e) => renomearCategoria(ci, e.target.value)}
+                  onBlur={() => persistir(lista)}
+                  placeholder="Nome da categoria"
+                />
+                <button className="icon-x" title="Remover categoria" onClick={() => removerCategoria(ci)}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
+                </button>
+              </div>
+              <ul className="edit-list">
+                {(cat.itens || []).map((it, j) => (
+                  <li key={j} className="edit-item">
+                    <input
+                      className="edit-item-name"
+                      value={it.item}
+                      onChange={(e) => editarItem(ci, j, "item", e.target.value)}
+                      onBlur={() => persistir(lista)}
+                      placeholder="Item"
+                    />
+                    <input
+                      className="edit-item-qtd"
+                      value={it.quantidade || ""}
+                      onChange={(e) => editarItem(ci, j, "quantidade", e.target.value)}
+                      onBlur={() => persistir(lista)}
+                      placeholder="qtd"
+                    />
+                    <button className="icon-x" title="Remover item" onClick={() => removerItem(ci, j)}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button className="btn-add" onClick={() => adicionarItem(ci)}>+ Adicionar item</button>
+            </div>
+          ))}
+
+          <div className="card add-cat-card">
+            <label>Nova categoria (ex.: Limpeza, Higiene, Pet)</label>
+            <div className="controls-row">
+              <input
+                className="slim"
+                value={novaCat}
+                onChange={(e) => setNovaCat(e.target.value)}
+                placeholder="Nome da categoria"
+                onKeyDown={(e) => e.key === "Enter" && adicionarCategoria()}
+              />
+              <button className="btn btn-slim" onClick={adicionarCategoria}>+ Categoria</button>
+            </div>
+          </div>
+        </>
+      )}
+
       {!carregando && !lista && !gerando && (
         <p className="muted center">Clique em “Gerar lista” para montar suas compras.</p>
       )}
       </div>
       </div>
     </div>
+
+      {editando && concluirFixo && (
+        <div className="concluir-fixo">
+          <button className="btn-edit-toggle ativo" onClick={sairEdicao}>
+            ✓ Concluir edição
+          </button>
+        </div>
+      )}
 
       {lista && (
         <FloatingMic recording={gravando} busy={chatLoading} onToggle={alternarGravacao} />
