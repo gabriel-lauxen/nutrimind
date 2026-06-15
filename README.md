@@ -1,72 +1,58 @@
 # 🥗 NutriMind — Protótipo (React + Vite + Supabase + Groq)
 
-Protótipo do aplicativo do TCC: questionário nutricional baseado em evidências,
-geração de **plano alimentar** com IA (Groq) e **lista de compras** automática.
-Paleta verde, login por e-mail/senha (Supabase Auth).
+Protótipo do app de alimentação saudável com IA (TCC ADS): questionário nutricional
+baseado em evidências, geração de **plano alimentar** e **lista de compras** com IA
+(Groq), agente conversacional por voz e PWA com tela cheia no iPhone.
 
 ## Funcionalidades
-- Login e cadastro (Supabase Auth).
-- Questionário com peso, altura, idade, sexo, nível de atividade e objetivo da dieta.
-- Cálculo automático de metas (TMB Mifflin-St Jeor, fator de atividade, macros por objetivo).
-- Geração de plano alimentar com **2–3 opções de prato por refeição** via IA.
-- Página de **lista de compras** categorizada por setor do mercado, com checkboxes.
-- Chave da API Groq salva **apenas no navegador** (localStorage).
+- Login/cadastro (Supabase Auth).
+- Questionário (TMB Mifflin-St Jeor, fator de atividade, macros por objetivo, IMC e peso ideal).
+- Plano alimentar com 2–3 opções por refeição + geração de prato personalizado.
+- Filtros em chips por refeição (Plano) e por categoria (Lista de compras).
+- Lista de compras com assistente conversacional (texto ou **voz** via Whisper/Groq):
+  “adicione maçã”, “marque banana”, “sugira frutas da estação”.
+- UI moderna: header verde liquid-glass, app bar lateral (desktop) e bottom nav (mobile).
+- PWA instalável e tela cheia no iPhone.
 
 ## Pré-requisitos
 - Node.js 18+ e npm.
-- Uma conta no [Supabase](https://supabase.com).
-- Uma chave da API do [Groq](https://console.groq.com) (gratuita).
+- Conta no [Supabase](https://supabase.com) e chave da API do [Groq](https://console.groq.com).
 
-## 1. Configurar o Supabase
-1. Crie um projeto no Supabase.
-2. No menu **SQL Editor**, cole e execute o conteúdo de [`supabase_schema.sql`](./supabase_schema.sql).
-   Isso cria as tabelas `profiles`, `meal_plans`, `shopping_lists` e as políticas de segurança (RLS).
-3. (Opcional) Em **Authentication → Providers → Email**, desative "Confirm email"
-   para conseguir logar de imediato durante os testes.
-4. Em **Project Settings → API**, copie a **Project URL** e a **anon public key**.
+## 1. Supabase
+1. Crie um projeto e rode o conteúdo de [`supabase_schema.sql`](./supabase_schema.sql) no SQL Editor.
+2. (Opcional) Desative "Confirm email" em Authentication → Providers → Email para testes.
+3. Copie a **Project URL** e a **publishable key** em Project Settings → API Keys.
 
-## 2. Configurar o `.env`
-Crie um arquivo `.env` na raiz do projeto (copie de `.env.example`).
-Use a **publishable key** (Project Settings → API Keys). O prefixo `VITE_` é
-obrigatório — este projeto usa Vite, então `NEXT_PUBLIC_` **não** funciona.
-
+## 2. `.env`
+Crie um `.env` (modelo em `.env.example`). Prefixo `VITE_` obrigatório:
 ```
 VITE_SUPABASE_URL=https://SEU_PROJETO.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxxxxxx
 ```
 
-## 3. Rodar o projeto
+## 3. Rodar
 ```bash
 npm install
 npm run dev
 ```
-Abra o endereço exibido (ex.: http://localhost:5173).
+Em **Ajustes**, cole sua chave da API Groq (fica só no navegador).
 
-## 4. Usar
-1. Crie uma conta e faça login.
-2. Vá em **Ajustes** e cole sua **chave da API Groq**.
-3. Preencha o **Questionário** e clique em *Gerar plano alimentar*.
-4. Veja o plano em **Plano** e gere sua **Lista de compras**.
+## Testar o PWA no iPhone (HTTPS via ngrok)
+O dev server já libera túneis ngrok (`vite.config.js`). Em outro terminal:
+```bash
+npm run tunnel        # ngrok http 5173
+```
+Abra a URL `https://...ngrok...` no Safari do iPhone → Compartilhar → "Adicionar à Tela de Início".
 
 ## Estrutura
 ```
 src/
-  lib/
-    supabase.js     Cliente Supabase
-    nutrition.js    Cálculos (TMB, GET, macros, IMC) — baseados em literatura
-    groq.js         Integração Groq + prompts estruturados de dieta e compras
-  context/AuthContext.jsx
-  pages/
-    Login.jsx
-    Settings.jsx        Chave da API Groq
-    Questionnaire.jsx   Anamnese + prévia das metas
-    MealPlan.jsx        Plano alimentar com opções de prato
-    ShoppingList.jsx    Lista de compras categorizada
-  App.jsx               Rotas + navbar
-supabase_schema.sql     Script para criar o banco
+  lib/        supabase.js · nutrition.js · groq.js
+  context/    AuthContext.jsx
+  pages/      Login · Questionnaire · MealPlan · ShoppingList · Settings
+  App.jsx     Rotas + sidebar + header glass + bottom nav
+public/       manifest, service worker, ícones
+supabase_schema.sql
 ```
 
-## Observações
-- Protótipo acadêmico: o plano gerado pela IA é uma sugestão e **não substitui** a
-  orientação de um nutricionista.
-- A chave Groq nunca é enviada ao Supabase — fica só no `localStorage` do navegador.
+Protótipo acadêmico — o conteúdo gerado pela IA é sugestão e não substitui um nutricionista.

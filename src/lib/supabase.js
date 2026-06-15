@@ -7,7 +7,6 @@ const publishableKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!url || !publishableKey) {
-  // Aviso amigável no console caso o .env não tenha sido preenchido
   console.warn(
     "[Supabase] VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLISHABLE_KEY ausentes. " +
       "Crie um arquivo .env baseado em .env.example."

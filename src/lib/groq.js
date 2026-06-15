@@ -33,7 +33,7 @@ const LABEL_ATIVIDADE = {
 };
 
 // ----------------------------------------------------------------------------
-// Monta um prompt clínico, estruturado e baseado em evidências
+// Prompt clínico, estruturado e baseado em evidências para o plano alimentar
 // ----------------------------------------------------------------------------
 export function montarPromptDieta(dados, nutri) {
   const restricoes =
@@ -126,23 +126,27 @@ Responda EXCLUSIVAMENTE em JSON válido no formato:
 }`;
 }
 
-// ----------------------------------------------------------------------------
-// Chamada genérica que força retorno em JSON
-// ----------------------------------------------------------------------------
+// Extrai uma mensagem de erro amigável do corpo da resposta (sem JSON cru)
+async function msgErro(resp, fallback) {
+  try {
+    const j = await resp.json();
+    const m = j?.error?.message;
+    if (m && !/could not process file|invalid media/i.test(m)) return m;
+  } catch {
+    /* corpo não-JSON: usa o fallback */
+  }
+  return fallback;
+}
+
 async function chamarGroqJSON(prompt) {
   const key = getGroqKey();
   if (!key) {
-    throw new Error(
-      "Chave da API Groq não configurada. Vá em Ajustes e cole sua chave."
-    );
+    throw new Error("Chave da API Groq não configurada. Vá em Ajustes e cole sua chave.");
   }
 
   const resp = await fetch(GROQ_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model: getGroqModel(),
       temperature: 0.7,
@@ -150,8 +154,7 @@ async function chamarGroqJSON(prompt) {
       messages: [
         {
           role: "system",
-          content:
-            "Você é um nutricionista que responde sempre em JSON válido, em português do Brasil.",
+          content: "Você é um nutricionista que responde sempre em JSON válido, em português do Brasil.",
         },
         { role: "user", content: prompt },
       ],
@@ -159,8 +162,7 @@ async function chamarGroqJSON(prompt) {
   });
 
   if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`Erro Groq (${resp.status}): ${txt}`);
+    throw new Error(await msgErro(resp, "Não consegui falar com a IA agora. Tente novamente."));
   }
 
   const data = await resp.json();
@@ -210,4 +212,73 @@ Responda EXCLUSIVAMENTE em JSON válido no formato:
 
 export function gerarPratoPersonalizado(args) {
   return chamarGroqJSON(montarPromptPratoPersonalizado(args));
+}
+
+// ----------------------------------------------------------------------------
+// Agente da lista de compras: aplica um comando em linguagem natural ao JSON
+// ----------------------------------------------------------------------------
+export function montarPromptEditarLista({ lista, comando }) {
+  return `Você é um assistente que gerencia uma lista de compras em JSON. Aplique o comando do usuário e retorne a LISTA COMPLETA atualizada, além de uma mensagem curta e amigável de confirmação.
+
+Tipos de comando que você deve entender (em português):
+- Adicionar item (ex: "adicione maçã", "põe 1kg de arroz") → inclua na categoria mais adequada (Hortifrúti, Proteínas, Grãos e cereais, Laticínios, Outros).
+- Remover item (ex: "tira a banana", "remove o leite").
+- Marcar item como comprado (ex: "marque banana") → defina "marcado": true.
+- Desmarcar (ex: "desmarque banana") → "marcado": false.
+- Marcar/limpar tudo, renomear, alterar quantidade.
+- Sugerir itens (ex: "sugira frutas da estação", "o que falta para uma salada?") → adicione itens coerentes e cite-os na mensagem.
+
+Encontre itens por nome aproximado (ignore acentos/maiúsculas). Mantenha os itens não afetados como estão. Toda a estrutura deve ser preservada.
+
+COMANDO DO USUÁRIO: "${comando}"
+
+LISTA ATUAL (JSON):
+${JSON.stringify(lista)}
+
+Responda EXCLUSIVAMENTE em JSON válido no formato:
+{
+  "mensagem": "string curta confirmando o que foi feito",
+  "categorias": [
+    { "nome": "string", "itens": [ { "item": "string", "quantidade": "string", "marcado": boolean } ] }
+  ]
+}`;
+}
+
+export function editarListaPorComando(args) {
+  return chamarGroqJSON(montarPromptEditarLista(args));
+}
+
+// ----------------------------------------------------------------------------
+// Transcrição de áudio (voz) via Whisper no Groq
+// ----------------------------------------------------------------------------
+export async function transcreverAudio(blob) {
+  const key = getGroqKey();
+  if (!key) throw new Error("Configure sua chave Groq em Ajustes.");
+
+  if (!blob || blob.size < 1200) {
+    throw new Error("Gravação muito curta. Toque no microfone, fale e toque de novo para enviar.");
+  }
+
+  const ext = blob.type.includes("mp4")
+    ? "mp4"
+    : blob.type.includes("ogg")
+      ? "ogg"
+      : "webm";
+
+  const form = new FormData();
+  form.append("file", blob, `comando.${ext}`);
+  form.append("model", "whisper-large-v3-turbo");
+  form.append("language", "pt");
+  form.append("response_format", "json");
+
+  const resp = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}` },
+    body: form,
+  });
+  if (!resp.ok) {
+    throw new Error(await msgErro(resp, "Não consegui entender o áudio. Tente gravar de novo."));
+  }
+  const data = await resp.json();
+  return (data.text || "").trim();
 }

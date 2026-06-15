@@ -6,11 +6,9 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
-  <!-- folha -->
   <path d="M256,104 C 372,176 372,356 256,424 C 140,356 140,176 256,104 Z" fill="#ffffff"/>
   <path d="M256,140 L 256,398" stroke="#4a7c59" stroke-width="12" stroke-linecap="round"/>
   <path d="M256,210 L 318,176 M256,260 L 196,228 M256,300 L 322,272 M256,338 L 200,316"
         stroke="#4a7c59" stroke-width="10" stroke-linecap="round" fill="none"/>
-  <!-- acento marigold (semente/sol) -->
   <circle cx="256" cy="150" r="16" fill="#f9a620"/>
 </svg>

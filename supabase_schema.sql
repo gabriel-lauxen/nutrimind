@@ -1,5 +1,5 @@
 -- =============================================================
--- Schema do protótipo "Bem Estar do Corpo e da Mente"
+-- Schema do protótipo "NutriMind"
 -- Execute no SQL Editor do Supabase (uma vez).
 -- =============================================================
 
