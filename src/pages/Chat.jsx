@@ -9,6 +9,60 @@ const SUGESTOES = [
   "Quais lanches saudáveis para a tarde?",
 ];
 
+// Mini renderizador de Markdown (negrito, itálico, código, links, listas,
+// títulos) — sem dependências. Escapa HTML antes de aplicar a formatação.
+function mdToHtml(src) {
+  const esc = (s) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const inline = (s) =>
+    esc(s)
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>")
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(
+        /\[([^\]]+)\]\((https?:[^)\s]+)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
+      );
+  const lines = (src || "").replace(/\r/g, "").split("\n");
+  let html = "";
+  let list = null; // 'ul' | 'ol'
+  const closeList = () => {
+    if (list) {
+      html += `</${list}>`;
+      list = null;
+    }
+  };
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, "");
+    let m;
+    if ((m = line.match(/^\s*[-*+]\s+(.*)/))) {
+      if (list !== "ul") {
+        closeList();
+        html += "<ul>";
+        list = "ul";
+      }
+      html += `<li>${inline(m[1])}</li>`;
+    } else if ((m = line.match(/^\s*\d+\.\s+(.*)/))) {
+      if (list !== "ol") {
+        closeList();
+        html += "<ol>";
+        list = "ol";
+      }
+      html += `<li>${inline(m[1])}</li>`;
+    } else if ((m = line.match(/^\s*#{1,6}\s+(.*)/))) {
+      closeList();
+      html += `<p class="md-h">${inline(m[1])}</p>`;
+    } else if (line.trim() === "") {
+      closeList();
+    } else {
+      closeList();
+      html += `<p>${inline(line)}</p>`;
+    }
+  }
+  closeList();
+  return html;
+}
+
 export default function Chat() {
   const toast = useToast();
   const [mensagens, setMensagens] = useState([]);
@@ -58,9 +112,17 @@ export default function Chat() {
         </div>
       ) : (
         <div className="chat-messages">
-          {mensagens.map((m, i) => (
-            <div key={i} className={`chat-bubble ${m.role}`}>{m.content}</div>
-          ))}
+          {mensagens.map((m, i) =>
+            m.role === "assistant" ? (
+              <div
+                key={i}
+                className="chat-bubble assistant md"
+                dangerouslySetInnerHTML={{ __html: mdToHtml(m.content) }}
+              />
+            ) : (
+              <div key={i} className="chat-bubble user">{m.content}</div>
+            ),
+          )}
           {loading && (
             <div className="chat-bubble assistant chat-typing">
               <span className="spinner" /> Pensando…
