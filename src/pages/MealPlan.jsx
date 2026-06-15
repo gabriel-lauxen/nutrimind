@@ -95,6 +95,36 @@ function alvoRefeicao(ref, meta) {
   };
 }
 
+function PlanSkeleton() {
+  return (
+    <>
+      <div className="plan-summary">
+        <div className="skel" style={{ height: 26, width: "55%", margin: "8px 2px 16px" }} />
+        <div className="plan-macros">
+          {[0, 1, 2, 3].map((i) => (
+            <div className="macro-item" key={i}>
+              <div className="skel" style={{ height: 26, width: "55%" }} />
+              <div className="skel" style={{ height: 11, width: "80%", marginTop: 8 }} />
+            </div>
+          ))}
+        </div>
+        <div className="skel" style={{ height: 46, marginTop: 16, borderRadius: 15 }} />
+        <div className="skel" style={{ height: 78, marginTop: 16, borderRadius: 18 }} />
+      </div>
+      <div className="filter-bar">
+        {[0, 1, 2].map((i) => <div className="skel skel-chip" key={i} />)}
+      </div>
+      {[0, 1].map((i) => (
+        <div className="meal" key={i}>
+          <div className="skel" style={{ height: 18, width: "42%" }} />
+          <div className="skel" style={{ height: 58, marginTop: 12, borderRadius: 14 }} />
+          <div className="skel" style={{ height: 58, marginTop: 10, borderRadius: 14 }} />
+        </div>
+      ))}
+    </>
+  );
+}
+
 export default function MealPlan() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -173,8 +203,7 @@ export default function MealPlan() {
     }
   }
 
-  if (carregando)
-    return <div className="loading-screen"><span className="spinner" /> Carregando plano…</div>;
+  if (carregando) return <PlanSkeleton />;
 
   if (!plano)
     return (

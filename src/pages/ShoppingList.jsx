@@ -108,6 +108,26 @@ function FloatingMic({ recording, busy, onToggle }) {
   );
 }
 
+function ListSkeleton() {
+  return (
+    <>
+      <div className="card">
+        <div className="skel" style={{ height: 24, width: "50%" }} />
+        <div className="skel" style={{ height: 12, width: "85%", marginTop: 12 }} />
+        <div className="skel" style={{ height: 40, marginTop: 16, borderRadius: 13 }} />
+      </div>
+      {[0, 1].map((c) => (
+        <div className="card" key={c}>
+          <div className="skel" style={{ height: 18, width: "35%" }} />
+          {[0, 1, 2, 3].map((r) => (
+            <div className="skel" key={r} style={{ height: 14, width: `${72 - r * 9}%`, marginTop: 16 }} />
+          ))}
+        </div>
+      ))}
+    </>
+  );
+}
+
 export default function ShoppingList() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -268,8 +288,7 @@ export default function ShoppingList() {
     }
   }
 
-  if (carregando)
-    return <div className="loading-screen"><span className="spinner" /> Carregando…</div>;
+  if (carregando) return <ListSkeleton />;
 
   if (!planoReg)
     return (

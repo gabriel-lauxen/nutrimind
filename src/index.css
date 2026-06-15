@@ -25,6 +25,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -36,22 +37,9 @@ body {
   background-color: var(--bg);
   /* Textura de alimentos (line art) + brilhos verdes — dá o que borrar no liquid glass */
   background-image:
-    radial-gradient(
-      900px 620px at 100% 0%,
-      rgba(74, 124, 89, 0.14),
-      transparent 55%
-    ),
-    radial-gradient(
-      820px 600px at 0% 100%,
-      rgba(74, 124, 89, 0.1),
-      transparent 55%
-    ),
-    url("/food-pattern2.svg");
-  background-size:
-    auto,
-    auto,
-    170px 170px;
-  background-repeat: no-repeat, no-repeat, repeat;
+    radial-gradient(900px 620px at 100% 0%, rgba(74, 124, 89, 0.12), transparent 55%),
+    radial-gradient(820px 600px at 0% 100%, rgba(74, 124, 89, 0.09), transparent 55%);
+  background-repeat: no-repeat, no-repeat;
   background-attachment: scroll;
   color: var(--ink);
   line-height: 1.5;
@@ -78,6 +66,27 @@ a:hover {
 .app-shell {
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+/* ---------- Vídeo de fundo (controlado pelo scroll) + camada de vidro ---------- */
+.bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
+  filter: blur(14px) saturate(112%);
+  transform: scale(1.16);
+  will-change: transform;
+}
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgba(240, 244, 238, 0.28);
 }
 
 /* ---------- Header verde liquid glass ---------- */
@@ -484,8 +493,17 @@ input[type="checkbox"]:focus-visible {
 .filter-scroll::-webkit-scrollbar { display: none; }
 .filter-scroll .chip { flex: 0 0 auto; }
 
-/* Resumo do plano — elegante, sem painel branco, colapsável e animado */
-.plan-summary { margin-bottom: 16px; }
+/* Resumo do plano — painel translúcido (vidro) para dar contraste ao título */
+.plan-summary {
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 22px;
+  padding: 14px 16px 16px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px) saturate(125%);
+  -webkit-backdrop-filter: blur(10px) saturate(125%);
+}
 .plan-head {
   width: 100%;
   background: transparent;
@@ -499,9 +517,9 @@ input[type="checkbox"]:focus-visible {
   font-family: inherit;
 }
 .plan-title {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.12rem;
-  color: var(--accent-dark);
+  color: #284a35;
   letter-spacing: -0.01em;
   text-align: left;
 }
@@ -548,8 +566,6 @@ input[type="checkbox"]:focus-visible {
   flex-direction: column;
   gap: 2px;
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   overflow: hidden;
 }
 .macro-item::before {
@@ -686,8 +702,6 @@ input[type="checkbox"]:focus-visible {
   border-radius: 18px;
   padding: 16px 18px;
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(8px) saturate(130%);
-  -webkit-backdrop-filter: blur(8px) saturate(130%);
 }
 .plan-note-text {
   text-align: left;
@@ -731,6 +745,42 @@ input[type="checkbox"]:focus-visible {
   color: var(--muted);
   font-weight: 600;
 }
+
+/* ---------- Transição de página (slide ao navegar) ---------- */
+.page-anim {
+  animation: pg-fwd 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+}
+.page-anim.back {
+  animation: pg-back 0.3s cubic-bezier(0.33, 1, 0.68, 1);
+}
+@keyframes pg-fwd {
+  from { opacity: 0; transform: translateX(36px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pg-back {
+  from { opacity: 0; transform: translateX(-36px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ---------- Skeletons ---------- */
+.skel {
+  position: relative;
+  overflow: hidden;
+  background: rgba(74, 124, 89, 0.09);
+  border-radius: 10px;
+}
+.skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: shimmer 1.3s infinite;
+}
+@keyframes shimmer {
+  to { transform: translateX(100%); }
+}
+.skel-chip { height: 30px; width: 90px; border-radius: 999px; flex: 0 0 auto; }
 
 /* ---------- Toast (entra/sai do topo) ---------- */
 .toast-wrap {

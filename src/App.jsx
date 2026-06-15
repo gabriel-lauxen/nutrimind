@@ -39,6 +39,9 @@ function activeIdx(pathname) {
   return idx;
 }
 
+// guarda o índice anterior (escopo de módulo, persiste entre trocas de rota)
+let navPrevIdx = 0;
+
 // Mede a posição do item ativo (relativa ao container) para o indicador deslizante
 function useSlider(pathname) {
   const containerRef = useRef(null);
@@ -142,6 +145,7 @@ function useSwipeNav() {
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
+  const { pathname } = useLocation();
   useSwipeNav();
   if (loading)
     return (
@@ -150,22 +154,78 @@ function Protected({ children }) {
       </div>
     );
   if (!user) return <Navigate to="/login" replace />;
+  const idx = activeIdx(pathname);
+  const dir = idx >= navPrevIdx ? "fwd" : "back";
+  navPrevIdx = idx;
   return (
     <div className="app-shell">
       <TopBar />
-      <div className="container">{children}</div>
+      <div className={`container page-anim ${dir}`}>{children}</div>
     </div>
   );
 }
 
+// Vídeo de fundo controlado pelo scroll (scrubbing suave com lerp)
+function BackgroundVideo() {
+  const ref = useRef(null);
+  const target = useRef(0);
+  const curr = useRef(0);
+  const running = useRef(false);
+  const rafId = useRef(0);
+
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+
+    const prime = () => { v.play().then(() => v.pause()).catch(() => {}); };
+    v.addEventListener("loadeddata", prime, { once: true });
+
+    const tick = () => {
+      const d = v.duration || 0;
+      if (!d) { rafId.current = requestAnimationFrame(tick); return; }
+      curr.current += (target.current - curr.current) * 0.1;
+      if (Math.abs(target.current - curr.current) > 0.015) {
+        try { v.currentTime = curr.current; } catch { /* seek em andamento */ }
+        rafId.current = requestAnimationFrame(tick);
+      } else {
+        try { v.currentTime = target.current; } catch { /* */ }
+        running.current = false; // estabilizou: para o loop (economiza bateria)
+      }
+    };
+    const ensure = () => {
+      if (!running.current) { running.current = true; rafId.current = requestAnimationFrame(tick); }
+    };
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const frac = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+      target.current = frac * (v.duration || 0);
+      ensure();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    onScroll();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(rafId.current);
+    };
+  }, []);
+
+  return <video ref={ref} className="bg-video" src="/bg.mp4" muted playsInline preload="auto" aria-hidden="true" />;
+}
+
 export default function App() {
   return (
-    <Routes>
+    <>
+      <BackgroundVideo />
+      <div className="bg-overlay" aria-hidden="true" />
+      <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/plano" element={<Protected><MealPlan /></Protected>} />
       <Route path="/compras" element={<Protected><ShoppingList /></Protected>} />
       <Route path="/ajustes" element={<Protected><Settings /></Protected>} />
       <Route path="*" element={<Navigate to="/plano" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
