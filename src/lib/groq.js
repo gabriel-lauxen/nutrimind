@@ -183,6 +183,37 @@ export function gerarListaCompras(plano, dias = 7) {
 }
 
 // ----------------------------------------------------------------------------
+// Chat de dúvidas de nutrição (agente nutricionista)
+// ----------------------------------------------------------------------------
+const SISTEMA_NUTRI =
+  "Você é o assistente nutricionista virtual do app NutriMind: experiente, acolhedor e didático. " +
+  "Responda dúvidas sobre nutrição, alimentação saudável, dietas, macronutrientes, receitas e bem-estar " +
+  "de forma clara, prática e baseada em evidências, sempre em português do Brasil. Seja conciso e amigável, " +
+  "use exemplos do dia a dia e do contexto brasileiro. Quando fizer sentido, lembre gentilmente que você não " +
+  "substitui o acompanhamento de um nutricionista. Não faça diagnósticos nem prescreva tratamento para doenças; " +
+  "nesses casos, oriente procurar um profissional de saúde.";
+
+export async function chatNutricao(historico) {
+  const key = getGroqKey();
+  if (!key) throw new Error("Configure sua chave Groq em Ajustes.");
+
+  const resp = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: getGroqModel(),
+      temperature: 0.6,
+      messages: [{ role: "system", content: SISTEMA_NUTRI }, ...historico],
+    }),
+  });
+  if (!resp.ok) {
+    throw new Error(await msgErro(resp, "Não consegui responder agora. Tente novamente."));
+  }
+  const data = await resp.json();
+  return (data.choices?.[0]?.message?.content || "").trim();
+}
+
+// ----------------------------------------------------------------------------
 // Prato personalizado para uma refeição específica, batendo os macros da dieta
 // ----------------------------------------------------------------------------
 export function montarPromptPratoPersonalizado({ refeicaoNome, preferencia, alvo, restricoes }) {

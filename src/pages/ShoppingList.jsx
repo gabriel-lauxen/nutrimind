@@ -54,9 +54,15 @@ function FloatingMic({ recording, busy, onToggle }) {
     let p = null;
     try { p = JSON.parse(localStorage.getItem("mic_fab_pos")); } catch { p = null; }
     if (!p || typeof p.left !== "number") {
-      const w = window.innerWidth, h = window.innerHeight;
-      // padrão: canto direito; no desktop folga maior, no mobile acima da bottom nav
-      p = { left: w - FAB_SIZE - 20, top: h - FAB_SIZE - (w >= 880 ? 48 : 116) };
+      // padrão: canto inferior-direito da textarea do assistente
+      const ta = document.querySelector(".assist-input");
+      if (ta) {
+        const r = ta.getBoundingClientRect();
+        p = { left: r.right - FAB_SIZE - 12, top: r.bottom - FAB_SIZE - 12 };
+      } else {
+        const w = window.innerWidth, h = window.innerHeight;
+        p = { left: w - FAB_SIZE - 20, top: h - FAB_SIZE - (w >= 880 ? 48 : 116) };
+      }
     }
     p = clamp(p.left, p.top);
     st.current.pos = p;
@@ -110,21 +116,34 @@ function FloatingMic({ recording, busy, onToggle }) {
 
 function ListSkeleton() {
   return (
-    <>
-      <div className="card">
-        <div className="skel" style={{ height: 24, width: "50%" }} />
-        <div className="skel" style={{ height: 12, width: "85%", marginTop: 12 }} />
-        <div className="skel" style={{ height: 40, marginTop: 16, borderRadius: 13 }} />
+    <div className="page-grid">
+      <div className="col-left">
+        <div className="card">
+          <div className="skel" style={{ height: 24, width: "50%" }} />
+          <div className="skel" style={{ height: 12, width: "85%", marginTop: 12 }} />
+          <div className="skel" style={{ height: 44, marginTop: 16, borderRadius: 13 }} />
+        </div>
+        <div className="card">
+          <div className="skel" style={{ height: 18, width: "40%" }} />
+          <div className="skel" style={{ height: 96, marginTop: 14, borderRadius: 14 }} />
+        </div>
       </div>
-      {[0, 1].map((c) => (
-        <div className="card" key={c}>
-          <div className="skel" style={{ height: 18, width: "35%" }} />
-          {[0, 1, 2, 3].map((r) => (
-            <div className="skel" key={r} style={{ height: 14, width: `${72 - r * 9}%`, marginTop: 16 }} />
+      <div className="col-right">
+        <div className="filter-bar">
+          {[0, 1, 2, 3].map((i) => <div className="skel skel-chip" key={i} />)}
+        </div>
+        <div className="col-scroll">
+          {[0, 1, 2].map((c) => (
+            <div className="card" key={c}>
+              <div className="skel" style={{ height: 18, width: "35%" }} />
+              {[0, 1, 2, 3].map((r) => (
+                <div className="skel" key={r} style={{ height: 14, width: `${72 - r * 9}%`, marginTop: 16 }} />
+              ))}
+            </div>
           ))}
         </div>
-      ))}
-    </>
+      </div>
+    </div>
   );
 }
 
@@ -288,9 +307,7 @@ export default function ShoppingList() {
     }
   }
 
-  if (carregando) return <ListSkeleton />;
-
-  if (!planoReg)
+  if (!carregando && !planoReg)
     return (
       <div className="card">
         <h2>Gere um plano primeiro</h2>
@@ -303,6 +320,8 @@ export default function ShoppingList() {
 
   return (
     <>
+    <div className="page-grid">
+      <div className="col-left">
       <div className="card">
         <h2>Lista de compras</h2>
         <p className="subtitle">Gerada por IA a partir do seu plano e organizada por setor do mercado.</p>
@@ -317,13 +336,12 @@ export default function ShoppingList() {
           </select>
           <button className="btn btn-slim" onClick={gerar} disabled={gerando}>
             {gerando && <span className="spinner" />}
-            {lista ? "Gerar novamente" : "Gerar lista"}
+            Gerar lista
           </button>
         </div>
       </div>
 
-      {lista && (
-        <div className="card assist-card">
+      <div className="card assist-card">
           <h2>Assistente da lista</h2>
           <p className="subtitle">
             Peça por texto ou voz: “adicione maçã”, “marque banana”, “tira o leite”, “sugira frutas da estação”.
@@ -349,9 +367,10 @@ export default function ShoppingList() {
             </button>
           </div>
         </div>
-      )}
+      </div>
 
-      {lista && (
+      <div className="col-right">
+      {lista ? (
         <div className="filter-bar filter-scroll" ref={filterRef}>
           {filtros.map((f) => (
             <span key={f} className={`chip ${filtro === f ? "selected" : ""}`} onClick={() => aplicarFiltro(f)}>
@@ -359,9 +378,24 @@ export default function ShoppingList() {
             </span>
           ))}
         </div>
-      )}
+      ) : (carregando || gerando) ? (
+        <div className="filter-bar filter-scroll">
+          {[0, 1, 2, 3].map((i) => <div className="skel skel-chip" key={i} />)}
+        </div>
+      ) : null}
 
-      {lista && lista.categorias
+      <div className="col-scroll">
+      {(carregando || gerando) &&
+        [0, 1, 2].map((c) => (
+          <div className="card" key={`sk-${c}`}>
+            <div className="skel" style={{ height: 18, width: "35%" }} />
+            {[0, 1, 2, 3].map((r) => (
+              <div className="skel" key={r} style={{ height: 14, width: `${72 - r * 9}%`, marginTop: 16 }} />
+            ))}
+          </div>
+        ))}
+
+      {!carregando && !gerando && lista && lista.categorias
         .map((cat, ci) => ({ cat, ci }))
         .filter(({ cat }) => filtro === "Todos" || cat.nome === filtro)
         .map(({ cat, ci }) => (
@@ -383,9 +417,12 @@ export default function ShoppingList() {
           </div>
         ))}
 
-      {!lista && !gerando && (
+      {!carregando && !lista && !gerando && (
         <p className="muted center">Clique em “Gerar lista” para montar suas compras.</p>
       )}
+      </div>
+      </div>
+    </div>
 
       {lista && (
         <FloatingMic recording={gravando} busy={chatLoading} onToggle={alternarGravacao} />

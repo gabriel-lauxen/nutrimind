@@ -97,31 +97,38 @@ function alvoRefeicao(ref, meta) {
 
 function PlanSkeleton() {
   return (
-    <>
-      <div className="plan-summary">
-        <div className="skel" style={{ height: 26, width: "55%", margin: "8px 2px 16px" }} />
-        <div className="plan-macros">
-          {[0, 1, 2, 3].map((i) => (
-            <div className="macro-item" key={i}>
-              <div className="skel" style={{ height: 26, width: "55%" }} />
-              <div className="skel" style={{ height: 11, width: "80%", marginTop: 8 }} />
+    <div className="page-grid">
+      <div className="col-left">
+        <div className="plan-summary">
+          <div className="skel" style={{ height: 24, width: "45%", margin: "2px 2px 6px" }} />
+          <div className="skel" style={{ height: 14, width: "62%", margin: "0 2px 18px" }} />
+          <div className="plan-macros">
+            {[0, 1, 2, 3].map((i) => (
+              <div className="macro-item" key={i}>
+                <div className="skel" style={{ height: 28, width: "55%" }} />
+                <div className="skel" style={{ height: 11, width: "80%", marginTop: 8 }} />
+              </div>
+            ))}
+          </div>
+          <div className="skel" style={{ height: 56, marginTop: 16, borderRadius: 16 }} />
+          <div className="skel" style={{ height: 120, marginTop: 16, borderRadius: 12 }} />
+        </div>
+      </div>
+      <div className="col-right">
+        <div className="filter-bar">
+          {[0, 1, 2, 3].map((i) => <div className="skel skel-chip" key={i} />)}
+        </div>
+        <div className="col-scroll">
+          {[0, 1, 2].map((i) => (
+            <div className="meal" key={i}>
+              <div className="skel" style={{ height: 18, width: "38%" }} />
+              <div className="skel" style={{ height: 62, marginTop: 12, borderRadius: 14 }} />
+              <div className="skel" style={{ height: 62, marginTop: 10, borderRadius: 14 }} />
             </div>
           ))}
         </div>
-        <div className="skel" style={{ height: 46, marginTop: 16, borderRadius: 15 }} />
-        <div className="skel" style={{ height: 78, marginTop: 16, borderRadius: 18 }} />
       </div>
-      <div className="filter-bar">
-        {[0, 1, 2].map((i) => <div className="skel skel-chip" key={i} />)}
-      </div>
-      {[0, 1].map((i) => (
-        <div className="meal" key={i}>
-          <div className="skel" style={{ height: 18, width: "42%" }} />
-          <div className="skel" style={{ height: 58, marginTop: 12, borderRadius: 14 }} />
-          <div className="skel" style={{ height: 58, marginTop: 10, borderRadius: 14 }} />
-        </div>
-      ))}
-    </>
+    </div>
   );
 }
 
@@ -220,11 +227,17 @@ export default function MealPlan() {
   const filtros = ["Todos", ...refeicoes.map((r) => r.nome)];
 
   return (
-    <>
+    <div className="page-grid">
+      <div className="col-left">
       {/* Resumo do plano — sem painel branco, colapsável e animado */}
       <div className="plan-summary">
         <button className="plan-head" onClick={() => setAberto((a) => !a)} aria-expanded={aberto}>
-          <span className="plan-title">{registro?.titulo || "Seu plano alimentar"}</span>
+          <span className="plan-title">
+            <span className="plan-title-main">{(registro?.titulo || "Seu plano alimentar").split(" · ")[0]}</span>
+            {(registro?.titulo || "").includes(" · ") && (
+              <span className="plan-title-sub">{registro.titulo.split(" · ").slice(1).join(" · ")}</span>
+            )}
+          </span>
           <span className={`chev-btn ${aberto ? "open" : ""}`}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
           </span>
@@ -241,19 +254,23 @@ export default function MealPlan() {
 
             {meta.agua_litros && <AguaBar litros={meta.agua_litros} />}
 
-            <div className="plan-note">
-              {resumo.observacao && <p className="plan-note-text">{resumo.observacao}</p>}
-              <div className="plan-note-actions">
-                <button className="btn-compras" onClick={() => navigate("/compras")}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="20" r="1.4" /><circle cx="18" cy="20" r="1.4" /><path d="M2 3h3l2.3 12.2a1 1 0 0 0 1 .8h8.3a1 1 0 0 0 1-.8L21 7H6" /></svg>
-                  Ver lista de compras
-                </button>
+            {resumo.observacao && (
+              <div className="plan-note">
+                <p className="plan-note-text">{resumo.observacao}</p>
               </div>
+            )}
+            <div className="plan-note-actions">
+              <button className="btn-compras" onClick={() => navigate("/compras")}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="20" r="1.4" /><circle cx="18" cy="20" r="1.4" /><path d="M2 3h3l2.3 12.2a1 1 0 0 0 1 .8h8.3a1 1 0 0 0 1-.8L21 7H6" /></svg>
+                Ver lista de compras
+              </button>
             </div>
           </div>
         </div>
       </div>
+      </div>
 
+      <div className="col-right">
       {/* Filtros por refeição — uma linha, rolagem horizontal */}
       <div className="filter-bar filter-scroll" ref={filterRef}>
         {filtros.map((f) => (
@@ -263,6 +280,7 @@ export default function MealPlan() {
         ))}
       </div>
 
+      <div className="col-scroll">
       {refeicoes.map((ref, i) => {
         if (filtro !== "Todos" && ref.nome !== filtro) return null;
         return (
@@ -337,6 +355,8 @@ export default function MealPlan() {
       <div className="center" style={{ marginTop: 20 }}>
         <button className="btn-refazer" onClick={() => navigate("/ajustes")}>← Refazer questionário</button>
       </div>
-    </>
+      </div>
+      </div>
+    </div>
   );
 }
